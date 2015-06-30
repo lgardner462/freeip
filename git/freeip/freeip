@@ -1,0 +1,45 @@
+#!/usr/bin/env python
+import socket
+from dns import reversename, resolver
+import sys
+import os
+import subprocess
+
+### Create list of possible IPs 
+def ipRange(start_ip, end_ip):
+   start = list(map(int, start_ip.split(".")))
+   end = list(map(int, end_ip.split(".")))
+   temp = start
+   ip_range = []
+   
+   ip_range.append(start_ip)
+   while temp != end:
+      start[3] += 1
+      for i in (3, 2, 1):
+         if temp[i] == 256:
+            temp[i] = 0
+            temp[i-1] += 1
+      ip_range.append(".".join(map(str, temp)))    
+     
+   return ip_range
+
+start_ip = sys.argv[1]
+end_ip = sys.argv[2]
+ip_range = ipRange(start_ip,end_ip)
+noDNS = []
+
+### Check IP list for IP without DNS
+for ip in ip_range:
+	try:
+	     reversed_dns = socket.gethostbyaddr(ip)
+	except socket.herror:
+		noDNS.append(ip)
+
+### Ping IPs without DNS and print free IPs 
+for i in noDNS:
+	response = subprocess.call("ping " "-a " "-c " "1 " "-w " "1 " + i + "2> /dev/null" , shell=True)	
+	if response == 1:
+		print i
+		
+
+
