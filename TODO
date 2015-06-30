@@ -1,0 +1,6 @@
+
+just a little clean up
+
+* add --help or -help flags (read md file)
+* add a --show-missing flag (show ip's that ping but do not have dns/a hostname)
+
