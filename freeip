@@ -4,6 +4,7 @@ from dns import reversename, resolver
 import sys
 import os
 import subprocess
+from optparse import OptionParser
 
 ### Create list of possible IPs 
 def ipRange(start_ip, end_ip):
@@ -23,10 +24,21 @@ def ipRange(start_ip, end_ip):
      
    return ip_range
 
+#Adding flags for command line
+parser=OptionParser()
+parser.add_option("-s","--showmissing",action="store_true" , dest="sm",help="Show IPs that ping back but have no DNS")
+(options,args) = parser.parse_args()
+
+
+
+
 start_ip = sys.argv[1]
 end_ip = sys.argv[2]
 ip_range = ipRange(start_ip,end_ip)
 noDNS = []
+noDNSyesPing=[]
+
+# print ip_range
 
 ### Check IP list for IP without DNS
 for ip in ip_range:
@@ -35,11 +47,16 @@ for ip in ip_range:
 	except socket.herror:
 		noDNS.append(ip)
 
+# print noDNS
+
 ### Ping IPs without DNS and print free IPs 
 for i in noDNS:
-	response = subprocess.call("ping " "-a " "-c " "1 " "-w " "1 " + i + "2> /dev/null" , shell=True)	
-	if response == 1:
+	response = subprocess.call("ping " "-a " "-c " "1 " "-w " "1 " + i + " > /dev/null 2>&1 " , shell=True)	
+	if response == 1 and options.sm != True:
 		print i
+	elif response != 1 and options.sm == True:
+		print i
+
 		
 
 
